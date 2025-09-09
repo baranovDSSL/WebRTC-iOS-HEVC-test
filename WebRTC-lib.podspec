@@ -27,7 +27,7 @@ Pod::Spec.new do |spec|
   # For CocoaPods distribution - will point to GitHub release
   spec.source       = { 
     :http => "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test/releases/download/v#{spec.version}/WebRTC-H265.zip",
-    :sha256 => "a3751924f276936c8a7569f3c8d95d9d272e44e80652d3537ed8717494c25b4f"
+    :sha256 => "51060ed174e2f45c264e094eb559b2bd54663bd782676e484e6a93f28fa427ba"
   }
 
   spec.ios.deployment_target = '13.0'

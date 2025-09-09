@@ -90,7 +90,16 @@ echo "XCFramework created: $OUTPUT_DIR/WebRTC.xcframework"
 if [ "${ARCHIVE_BUILDS:-true}" = "true" ]; then
     echo "Creating distribution archive..."
     cd "$OUTPUT_DIR"
-    zip -r "WebRTC-H265.zip" "WebRTC.xcframework"
+    
+    # Copy LICENSE file to output directory for inclusion in archive
+    if [ -f "$PROJECT_ROOT/LICENSE" ]; then
+        cp "$PROJECT_ROOT/LICENSE" "$OUTPUT_DIR/"
+        echo "Including LICENSE file in archive..."
+    else
+        echo "⚠️ Warning: LICENSE file not found at $PROJECT_ROOT/LICENSE"
+    fi
+    
+    zip -r "WebRTC-H265.zip" "WebRTC.xcframework" LICENSE
     echo "Output: $OUTPUT_DIR/WebRTC-H265.zip"
 else
     echo "XCFramework: $OUTPUT_DIR/WebRTC.xcframework"
