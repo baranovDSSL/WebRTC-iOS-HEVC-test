@@ -1,0 +1,342 @@
+--- /dev/null
++++ src/sdk/objc/components/video_codec/RTCVideoDecoderH265.mm
+@@ -0,0 +1,339 @@
++/*
++ *  Copyright (c) 2023 The WebRTC project authors. All Rights Reserved.
++ *
++ *  Use of this source code is governed by a BSD-style license
++ *  that can be found in the LICENSE file in the root of the source
++ *  tree. An additional intellectual property rights grant can be found
++ *  in the file PATENTS.  All contributing project authors may
++ *  be found in the AUTHORS file in the root of the source tree.
++ *
++ */
++
++#import "RTCVideoDecoderH265.h"
++
++#import <VideoToolbox/VideoToolbox.h>
++
++#import "base/RTCVideoFrame.h"
++#import "base/RTCVideoFrameBuffer.h"
++#import "components/video_frame_buffer/RTCCVPixelBuffer.h"
++#import "helpers.h"
++#import "helpers/scoped_cftyperef.h"
++
++#if defined(WEBRTC_IOS)
++#import "helpers/UIDevice+RTCDevice.h"
++#endif
++
++#include "api/array_view.h"
++#include "modules/video_coding/include/video_error_codes.h"
++#include "rtc_base/checks.h"
++#include "rtc_base/logging.h"
++#include "rtc_base/time_utils.h"
++#include "sdk/objc/components/video_codec/nalu_rewriter.h"
++#include "common_video/h265/h265_common.h"
++#include "common_video/h265/h265_vps_parser.h"
++#include "common_video/h265/h265_sps_parser.h"
++#include "common_video/h265/h265_pps_parser.h"
++
++struct RTCH265FrameDecodeParams {
++  RTCH265FrameDecodeParams(RTCVideoDecoderCallback cb, int64_t ts)
++      : callback(cb), timestamp(ts) {}
++  RTCVideoDecoderCallback callback;
++  int64_t timestamp;
++};
++
++@interface RTC_OBJC_TYPE (RTCVideoDecoderH265)
++() - (void)setError : (OSStatus)error;
++@end
++
++void h265DecompressionOutputCallback(void *decoderRef,
++                                     void *params,
++                                     OSStatus status,
++                                     VTDecodeInfoFlags infoFlags,
++                                     CVImageBufferRef imageBuffer,
++                                     CMTime timestamp,
++                                     CMTime duration) {
++  std::unique_ptr<RTCH265FrameDecodeParams> decodeParams(
++      reinterpret_cast<RTCH265FrameDecodeParams *>(params));
++  
++  if (status != noErr) {
++    RTC_OBJC_TYPE(RTCVideoDecoderH265) *decoder =
++        (__bridge RTC_OBJC_TYPE(RTCVideoDecoderH265) *)decoderRef;
++    [decoder setError:status];
++    return;
++  }
++
++  RTC_OBJC_TYPE(RTCCVPixelBuffer) *frameBuffer =
++      [[RTC_OBJC_TYPE(RTCCVPixelBuffer) alloc] initWithPixelBuffer:imageBuffer];
++  RTC_OBJC_TYPE(RTCVideoFrame) *decodedFrame = 
++      [[RTC_OBJC_TYPE(RTCVideoFrame) alloc]
++          initWithBuffer:frameBuffer
++                rotation:RTCVideoRotation_0
++             timeStampNs:CMTimeGetSeconds(timestamp) * webrtc::kNumNanosecsPerSec];
++  decodedFrame.timeStamp = decodeParams->timestamp;
++  
++  decodeParams->callback(decodedFrame);
++}
++
++@implementation RTC_OBJC_TYPE (RTCVideoDecoderH265) {
++  CMMemoryPoolRef _memoryPool;
++  CMVideoFormatDescriptionRef _videoFormat;
++  VTDecompressionSessionRef _decompressionSession;
++  RTCVideoDecoderCallback _callback;
++  OSStatus _error;
++}
++
++- (instancetype)init {
++  if ((self = [super init])) {
++    _memoryPool = CMMemoryPoolCreate(nil);
++  }
++  return self;
++}
++
++- (void)dealloc {
++  [self destroyDecompressionSession];
++  [self setVideoFormat:nullptr];
++  if (_memoryPool) {
++    CFRelease(_memoryPool);
++    _memoryPool = nullptr;
++  }
++}
++
++- (NSInteger)startDecodeWithNumberOfCores:(int)numberOfCores {
++  return WEBRTC_VIDEO_CODEC_OK;
++}
++
++- (NSString *)implementationName {
++  return @"VideoToolbox H.265";
++}
++
++- (NSInteger)decode:(RTC_OBJC_TYPE(RTCEncodedImage) *)inputImage
++        missingFrames:(BOOL)missingFrames
++    codecSpecificInfo:(nullable id<RTC_OBJC_TYPE(RTCCodecSpecificInfo)>)info
++         renderTimeMs:(int64_t)renderTimeMs {
++  RTC_DCHECK(inputImage.buffer);
++
++  if (_error != noErr) {
++    _error = noErr;
++  }
++
++  uint8_t* bufferData = (uint8_t*)inputImage.buffer.bytes;
++  size_t bufferSize = inputImage.buffer.length;
++  
++  if (bufferSize == 0) {
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  webrtc::ScopedCFTypeRef<CMVideoFormatDescriptionRef> inputFormat =
++      webrtc::ScopedCF(
++          webrtc::CreateVideoFormatDescriptionH265(webrtc::MakeArrayView(
++              (uint8_t *)inputImage.buffer.bytes, inputImage.buffer.length)));
++  
++  if (inputFormat) {
++    if (!_decompressionSession || 
++        !CMFormatDescriptionEqual(inputFormat.get(), _videoFormat)) {
++      [self setVideoFormat:inputFormat.get()];
++      int sessionStatus = [self resetDecompressionSession];
++      if (sessionStatus != WEBRTC_VIDEO_CODEC_OK) {
++        return sessionStatus;
++      }
++    }
++  } 
++
++  if (!_videoFormat) {
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  webrtc::ArrayView<const uint8_t> buffer_view(bufferData, bufferSize);
++
++  CMSampleBufferRef sampleBuffer = nullptr;
++  if (!webrtc::H265AnnexBBufferToCMSampleBuffer(buffer_view, _videoFormat, &sampleBuffer, _memoryPool)) {
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  auto decodeParams = std::make_unique<RTCH265FrameDecodeParams>(_callback, inputImage.timeStamp);
++  
++  OSStatus status = VTDecompressionSessionDecodeFrame(
++      _decompressionSession,
++      sampleBuffer,
++      0,
++      decodeParams.release(),
++      nullptr);
++
++  CFRelease(sampleBuffer);
++
++  if (status != noErr) {
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  return WEBRTC_VIDEO_CODEC_OK;
++}
++
++- (void)setCallback:(RTCVideoDecoderCallback)callback {
++  _callback = callback;
++}
++
++- (NSInteger)releaseDecoder {
++  [self destroyDecompressionSession];
++  [self setVideoFormat:nullptr];
++  return WEBRTC_VIDEO_CODEC_OK;
++}
++
++#pragma mark - Private
++
++- (int)resetDecompressionSession {
++  [self destroyDecompressionSession];
++
++  CFMutableDictionaryRef destinationPixelBufferAttributes =
++      CFDictionaryCreateMutable(nullptr, 0, &kCFTypeDictionaryKeyCallBacks,
++                                &kCFTypeDictionaryValueCallBacks);
++  CFDictionarySetValue(destinationPixelBufferAttributes,
++                       kCVPixelBufferPixelFormatTypeKey,
++                       (__bridge const void *)@(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange));
++  CFDictionarySetValue(destinationPixelBufferAttributes,
++                       kCVPixelBufferIOSurfacePropertiesKey,
++                       (__bridge const void *)@{});
++
++  CFMutableDictionaryRef decoderConfig =
++      CFDictionaryCreateMutable(nullptr, 1, &kCFTypeDictionaryKeyCallBacks,
++                                &kCFTypeDictionaryValueCallBacks);
++#if !TARGET_OS_SIMULATOR
++  if (@available(iOS 17.0, *)) {
++    CFDictionarySetValue(decoderConfig,
++                         kVTVideoDecoderSpecification_RequireHardwareAcceleratedVideoDecoder,
++                         kCFBooleanTrue);
++  }
++#endif
++
++  VTDecompressionOutputCallbackRecord record = {
++      h265DecompressionOutputCallback, (__bridge void *)self,
++  };
++  OSStatus status = VTDecompressionSessionCreate(
++      nullptr, _videoFormat, decoderConfig, destinationPixelBufferAttributes,
++      &record, &_decompressionSession);
++  CFRelease(destinationPixelBufferAttributes);
++  CFRelease(decoderConfig);
++  if (status != noErr) {
++    [self destroyDecompressionSession];
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++  [self configureDecompressionSession];
++
++  return WEBRTC_VIDEO_CODEC_OK;
++}
++
++- (void)configureDecompressionSession {
++  RTC_DCHECK(_decompressionSession);
++#if defined(WEBRTC_IOS)
++  VTSessionSetProperty(_decompressionSession, kVTDecompressionPropertyKey_RealTime, kCFBooleanTrue);
++#endif
++}
++
++- (void)destroyDecompressionSession {
++  if (_decompressionSession) {
++#if defined(WEBRTC_IOS)
++    if (@available(iOS 8, *)) {
++      VTDecompressionSessionWaitForAsynchronousFrames(_decompressionSession);
++    }
++#endif
++    VTDecompressionSessionInvalidate(_decompressionSession);
++    CFRelease(_decompressionSession);
++    _decompressionSession = nullptr;
++  }
++}
++
++- (void)setVideoFormat:(CMVideoFormatDescriptionRef)videoFormat {
++  if (_videoFormat == videoFormat) {
++    return;
++  }
++  if (_videoFormat) {
++    CFRelease(_videoFormat);
++  }
++  _videoFormat = videoFormat;
++  if (_videoFormat) {
++    CFRetain(_videoFormat);
++  }
++}
++
++- (void)setError:(OSStatus)error {
++  _error = error;
++}
++
++- (BOOL)hasParameterSets:(uint8_t*)bufferData bufferSize:(size_t)bufferSize {
++  webrtc::ArrayView<const uint8_t> buffer_view(bufferData, bufferSize);
++  
++  std::vector<webrtc::H265::NaluIndex> nalu_indices = webrtc::H265::FindNaluIndices(buffer_view);
++  
++  for (const auto& nalu_index : nalu_indices) {
++    webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(buffer_view[nalu_index.start_offset]);
++    if (nalu_type == webrtc::H265::NaluType::kVps || 
++        nalu_type == webrtc::H265::NaluType::kSps || 
++        nalu_type == webrtc::H265::NaluType::kPps) {
++      return YES;
++    }
++  }
++  
++  return NO;
++}
++
++- (CMVideoFormatDescriptionRef)createVideoFormatDescription:(uint8_t*)bufferData bufferSize:(size_t)bufferSize {
++  webrtc::ArrayView<const uint8_t> buffer_view(bufferData, bufferSize);
++  
++  std::vector<webrtc::H265::NaluIndex> nalu_indices = webrtc::H265::FindNaluIndices(buffer_view);
++  
++  std::vector<uint8_t> vps_data, sps_data, pps_data;
++  
++  for (const auto& nalu_index : nalu_indices) {
++    size_t nalu_start = nalu_index.payload_start_offset;
++    size_t nalu_size = nalu_index.payload_size;
++    
++    webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(buffer_view[nalu_index.start_offset]);
++    
++    webrtc::ArrayView<const uint8_t> nalu_payload = buffer_view.subview(nalu_start, nalu_size);
++    std::vector<uint8_t> rbsp_buffer = webrtc::H265::ParseRbsp(nalu_payload);
++    
++    if (nalu_type == webrtc::H265::NaluType::kVps) {
++      vps_data = std::vector<uint8_t>(buffer_view.begin() + nalu_start, buffer_view.begin() + nalu_start + nalu_size);
++    } else if (nalu_type == webrtc::H265::NaluType::kSps) {
++      sps_data = std::vector<uint8_t>(buffer_view.begin() + nalu_start, buffer_view.begin() + nalu_start + nalu_size);
++    } else if (nalu_type == webrtc::H265::NaluType::kPps) {
++      pps_data = std::vector<uint8_t>(buffer_view.begin() + nalu_start, buffer_view.begin() + nalu_start + nalu_size);
++    }
++  }
++  
++  if (sps_data.empty() || pps_data.empty()) {
++    return nullptr;
++  }
++  
++  std::vector<const uint8_t*> param_set_ptrs;
++  std::vector<size_t> param_set_sizes;
++  
++  if (!vps_data.empty()) {
++    param_set_ptrs.push_back(vps_data.data());
++    param_set_sizes.push_back(vps_data.size());
++  }
++  
++  param_set_ptrs.push_back(sps_data.data());
++  param_set_sizes.push_back(sps_data.size());
++  
++  param_set_ptrs.push_back(pps_data.data());
++  param_set_sizes.push_back(pps_data.size());
++  
++  CMVideoFormatDescriptionRef description = nullptr;
++  OSStatus status = CMVideoFormatDescriptionCreateFromHEVCParameterSets(
++      kCFAllocatorDefault,
++      param_set_ptrs.size(),
++      param_set_ptrs.data(),
++      param_set_sizes.data(),
++      4,
++      nullptr,
++      &description);
++      
++  if (status != noErr) {
++    return nullptr;
++  }
++  
++  return description;
++}
++
++@end
++

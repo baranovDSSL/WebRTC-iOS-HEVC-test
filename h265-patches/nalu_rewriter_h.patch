@@ -1,0 +1,39 @@
+--- src/sdk/objc/components/video_codec/nalu_rewriter.h
++++ src/sdk/objc/components/video_codec/nalu_rewriter.h
+@@ -20,6 +20,7 @@
+ 
+ #include "api/array_view.h"
+ #include "common_video/h264/h264_common.h"
++#include "common_video/h265/h265_common.h"
+ #include "rtc_base/buffer.h"
+ 
+ using webrtc::H264::NaluIndex;
+@@ -44,12 +45,28 @@
+                                       CMSampleBufferRef* out_sample_buffer,
+                                       CMMemoryPoolRef memory_pool);
+ 
++// Converts a buffer received from RTP into a sample buffer suitable for the
++// VideoToolbox H.265 decoder. The RTP buffer is in annex b format whereas the 
++// sample buffer is in avcc format.
++// Parameter sets (VPS/SPS/PPS) are skipped since they should be in video_format.
++// Caller is responsible for releasing the created sample buffer.
++bool H265AnnexBBufferToCMSampleBuffer(ArrayView<const uint8_t> annexb_buffer,
++                                      CMVideoFormatDescriptionRef video_format,
++                                      CMSampleBufferRef* out_sample_buffer,
++                                      CMMemoryPoolRef memory_pool);
++
+ // Returns a video format description created from the sps/pps information in
+ // the Annex B buffer. If there is no such information, nullptr is returned.
+ // The caller is responsible for releasing the description.
+ CMVideoFormatDescriptionRef CreateVideoFormatDescription(
+     ArrayView<const uint8_t> annexb_buffer);
+ 
++// H.265 version: Returns a video format description created from the vps/sps/pps 
++// information in the Annex B buffer. If there is no such information, nullptr is returned.
++// The caller is responsible for releasing the description.
++CMVideoFormatDescriptionRef CreateVideoFormatDescriptionH265(
++    ArrayView<const uint8_t> annexb_buffer);
++
+ // Helper class for reading NALUs from an RTP Annex B buffer.
+ class AnnexBBufferReader final {
+  public:

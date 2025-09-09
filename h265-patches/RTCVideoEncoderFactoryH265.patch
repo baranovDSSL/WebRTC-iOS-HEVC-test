@@ -1,0 +1,62 @@
+--- /dev/null	2025-09-08 14:44:17
++++ src/sdk/objc/components/video_codec/RTCVideoEncoderFactoryH265.m	2025-09-04 01:19:10
+@@ -0,0 +1,59 @@
++/*
++ *  Copyright 2017 The WebRTC project authors. All Rights Reserved.
++ *
++ *  Use of this source code is governed by a BSD-style license
++ *  that can be found in the LICENSE file in the root of the source
++ *  tree. An additional intellectual property rights grant can be found
++ *  in the file PATENTS.  All contributing project authors may
++ *  be found in the AUTHORS file in the root of the source tree.
++ */
++
++#import "RTCVideoEncoderFactoryH265.h"
++
++#import "RTCVideoEncoderH265.h"
++#import "base/RTCVideoCodecInfo.h"
++#import "RTCDefaultVideoEncoderFactory.h"
++
++NSString *const kRTCVideoCodecH265Name = @"H265";
++
++@implementation RTC_OBJC_TYPE (RTCVideoEncoderFactoryH265)
++
++- (NSArray<RTC_OBJC_TYPE(RTCVideoCodecInfo) *> *)supportedCodecs {
++  NSMutableArray<RTC_OBJC_TYPE(RTCVideoCodecInfo) *> *codecs = [NSMutableArray array];
++  
++  // First, add H.265 codecs
++  NSString *codecName = kRTCVideoCodecH265Name;
++
++  // H.265 Main profile
++  NSDictionary<NSString *, NSString *> *mainParams = @{
++    @"profile-id" : @"1",  // Main profile
++    @"tier-flag" : @"0",   // Main tier
++    @"level-id" : @"120",  // Level 4.0
++  };
++  RTC_OBJC_TYPE(RTCVideoCodecInfo) *mainInfo =
++      [[RTC_OBJC_TYPE(RTCVideoCodecInfo) alloc]
++          initWithName:codecName
++            parameters:mainParams];
++  [codecs addObject:mainInfo];
++  
++  // Then, add standard codecs from default factory
++  RTCDefaultVideoEncoderFactory *defaultFactory = [[RTCDefaultVideoEncoderFactory alloc] init];
++  NSArray<RTC_OBJC_TYPE(RTCVideoCodecInfo) *> *standardCodecs = [defaultFactory supportedCodecs];
++  [codecs addObjectsFromArray:standardCodecs];
++
++  return [codecs copy];
++}
++
++- (id<RTC_OBJC_TYPE(RTCVideoEncoder)>)createEncoder:
++    (RTC_OBJC_TYPE(RTCVideoCodecInfo) *)info {
++  // If it's H.265, use our custom encoder
++  if ([info.name isEqualToString:kRTCVideoCodecH265Name]) {
++    return [[RTC_OBJC_TYPE(RTCVideoEncoderH265) alloc] initWithCodecInfo:info];
++  }
++  
++  // Otherwise, delegate to default factory
++  RTCDefaultVideoEncoderFactory *defaultFactory = [[RTCDefaultVideoEncoderFactory alloc] init];
++  return [defaultFactory createEncoder:info];
++}
++
++@end

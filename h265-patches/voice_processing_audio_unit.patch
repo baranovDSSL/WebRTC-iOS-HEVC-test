@@ -1,0 +1,37 @@
+--- src/sdk/objc/native/src/audio/voice_processing_audio_unit.mm	2025-09-01 12:15:08
++++ src/sdk/objc/native/src/audio/voice_processing_audio_unit.mm	2025-09-08 17:51:33
+@@ -15,6 +15,7 @@
+ 
+ #import "base/RTCLogging.h"
+ #import "sdk/objc/components/audio/RTCAudioSessionConfiguration.h"
++#import "sdk/objc/components/audio/RTCAudioSession.h"
+ 
+ #if !defined(NDEBUG)
+ static void LogStreamDescription(AudioStreamBasicDescription description) {
+@@ -384,6 +385,26 @@
+   RTC_DCHECK_GE(state_, kUninitialized);
+   RTCLog(@"Starting audio unit.");
+ 
++#if TARGET_OS_SIMULATOR
++  RTC_OBJC_TYPE(RTCAudioSession)* session = [RTC_OBJC_TYPE(RTCAudioSession) sharedInstance];
++  [session lockForConfiguration];
++ 
++  NSError* error = nil;
++  BOOL deactivated = [session setActive:NO error:&error];
++  if (deactivated && !error) {
++    error = nil;
++    BOOL categorySet = [session setCategory:AVAudioSessionCategoryPlayAndRecord 
++                                       mode:AVAudioSessionModeVoiceChat 
++                                    options:AVAudioSessionCategoryOptionDefaultToSpeaker | AVAudioSessionCategoryOptionAllowBluetooth
++                                      error:&error];
++    if (categorySet && !error) {
++      error = nil;
++      [session setActive:YES error:&error];
++    } 
++  }
++  [session unlockForConfiguration];
++#endif
++  
+   OSStatus result = AudioOutputUnitStart(vpio_unit_);
+   if (result != noErr) {
+     RTCLogError(@"Failed to start audio unit. Error=%ld", (long)result);

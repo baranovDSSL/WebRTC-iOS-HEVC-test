@@ -1,0 +1,45 @@
+--- src/sdk/objc/api/peerconnection/RTCPeerConnectionFactory.mm	2025-09-08 15:20:12
++++ src/sdk/objc/api/peerconnection/RTCPeerConnectionFactory.mm	2025-09-08 15:25:06
+@@ -40,6 +40,8 @@
+ #include "api/environment/environment_factory.h"
+ #include "api/rtc_event_log/rtc_event_log_factory.h"
+ #include "api/task_queue/default_task_queue_factory.h"
++#include "media/engine/internal_encoder_factory.h"
++#include "media/engine/internal_decoder_factory.h"
+ #import "components/video_codec/RTCVideoDecoderFactoryH264.h"
+ #import "components/video_codec/RTCVideoEncoderFactoryH264.h"
+ #include "media/base/media_constants.h"
+@@ -69,10 +71,10 @@
+       webrtc::CreateBuiltinAudioEncoderFactory();
+   dependencies.audio_decoder_factory =
+       webrtc::CreateBuiltinAudioDecoderFactory();
+-  dependencies.video_encoder_factory = webrtc::ObjCToNativeVideoEncoderFactory(
+-      [[RTC_OBJC_TYPE(RTCVideoEncoderFactoryH264) alloc] init]);
+-  dependencies.video_decoder_factory = webrtc::ObjCToNativeVideoDecoderFactory(
+-      [[RTC_OBJC_TYPE(RTCVideoDecoderFactoryH264) alloc] init]);
++  // Use internal native factories that expose all enabled codecs (incl. H.265/HEVC
++  // via VideoToolbox on iOS) without requiring Obj-C H.265 wrappers.
++  dependencies.video_encoder_factory = std::make_unique<webrtc::InternalEncoderFactory>();
++  dependencies.video_decoder_factory = std::make_unique<webrtc::InternalDecoderFactory>();
+   dependencies.env = webrtc::CreateEnvironment();
+ #ifdef WEBRTC_IOS
+   dependencies.adm = webrtc::CreateAudioDeviceModule(*dependencies.env);
+@@ -100,12 +102,12 @@
+ #ifdef HAVE_NO_MEDIA
+   return [self initWithNoMedia];
+ #else
+-  webrtc::PeerConnectionFactoryDependencies dependencies;
+-  dependencies.env = webrtc::CreateEnvironment();
+-  dependencies.audio_encoder_factory =
+-      webrtc::CreateBuiltinAudioEncoderFactory();
+-  dependencies.audio_decoder_factory =
+-      webrtc::CreateBuiltinAudioDecoderFactory();
++             webrtc::PeerConnectionFactoryDependencies dependencies;
++             dependencies.env = webrtc::CreateEnvironment();
++             dependencies.audio_encoder_factory =
++                 webrtc::CreateBuiltinAudioEncoderFactory();
++             dependencies.audio_decoder_factory =
++                 webrtc::CreateBuiltinAudioDecoderFactory();
+   if (encoderFactory) {
+     dependencies.video_encoder_factory =
+         webrtc::ObjCToNativeVideoEncoderFactory(encoderFactory);

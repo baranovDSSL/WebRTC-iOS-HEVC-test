@@ -1,0 +1,70 @@
+--- src/sdk/objc/native/src/audio/audio_device_ios.mm	2025-09-01 12:15:08
++++ src/sdk/objc/native/src/audio/audio_device_ios.mm	2025-09-08 16:49:01
+@@ -236,28 +236,65 @@
+ int32_t AudioDeviceIOS::StartPlayout() {
+   LOGI() << "StartPlayout";
+   RTC_DCHECK_RUN_ON(thread_);
++  
+   RTC_DCHECK(audio_is_initialized_);
+   RTC_DCHECK(!playing_.load());
+   RTC_DCHECK(audio_unit_);
++  
+   if (!audio_is_initialized_) {
+     return -1;
+   }
++  
+   if (fine_audio_buffer_) {
+     fine_audio_buffer_->ResetPlayout();
+   }
++  
++  // Check AVAudioSession state before starting AudioUnit
++  RTC_OBJC_TYPE(RTCAudioSession)* session = [RTC_OBJC_TYPE(RTCAudioSession) sharedInstance];
++  
++  // Force configure AVAudioSession for WebRTC before starting AudioUnit
++  NSError* error = nil;
++  
++  // Lock session for configuration
++  [session lockForConfiguration];
++  
++#if TARGET_OS_SIMULATOR
++  AVAudioSessionCategory audioCategory = AVAudioSessionCategoryPlayback;
++  NSString* audioMode = AVAudioSessionModeDefault;
++#else
++  AVAudioSessionCategory audioCategory = AVAudioSessionCategoryPlayAndRecord;
++  NSString* audioMode = AVAudioSessionModeVoiceChat;
++#endif
++
++  [session setCategory:audioCategory
++                  mode:audioMode
++               options:AVAudioSessionCategoryOptionDefaultToSpeaker | AVAudioSessionCategoryOptionAllowBluetooth
++                 error:&error];
++  
++  // Activate AVAudioSession
++  if (!session.isActive) {
++    error = nil;
++    [session setActive:YES error:&error];
++  }
++  
++  // Unlock session
++  [session unlockForConfiguration];
++  
+   if (!recording_.load() &&
+       audio_unit_->GetState() == VoiceProcessingAudioUnit::kInitialized) {
+     OSStatus result = audio_unit_->Start();
++    
+     if (result != noErr) {
+-      RTC_OBJC_TYPE(RTCAudioSession)* session =
++      RTC_OBJC_TYPE(RTCAudioSession)* audioSession =
+           [RTC_OBJC_TYPE(RTCAudioSession) sharedInstance];
+-      [session notifyAudioUnitStartFailedWithError:result];
++      [audioSession notifyAudioUnitStartFailedWithError:result];
+       RTCLogError(@"StartPlayout failed to start audio unit, reason %d",
+                   result);
+       return -1;
+     }
+     RTC_LOG(LS_INFO) << "Voice-Processing I/O audio unit is now started";
+   }
++  
+   playing_.store(1, std::memory_order_release);
+   num_playout_callbacks_ = 0;
+   num_detected_playout_glitches_ = 0;
