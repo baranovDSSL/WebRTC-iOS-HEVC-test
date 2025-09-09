@@ -4,7 +4,7 @@
 
 ### CocoaPods
 ```ruby
-pod 'WebRTC-H265'
+pod 'WebRTC-lib'
 ```
 
 ### Local Build
