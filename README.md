@@ -4,7 +4,7 @@
 
 ### CocoaPods
 ```ruby
-pod 'WebRTC-lib'
+pod 'WebRTC-iOS-HEVC'
 ```
 
 ### Local Build
