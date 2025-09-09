@@ -1,5 +1,5 @@
 Pod::Spec.new do |spec|
-  spec.name         = 'WebRTC-iOS-HEVC'
+  spec.name         = 'WebRTC-lib'
   spec.version      = '1.0.0'
   spec.summary      = 'WebRTC с поддержкой H.265'
 
