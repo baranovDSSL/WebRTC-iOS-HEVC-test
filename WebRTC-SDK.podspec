@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
-  spec.name         = "WebRTCLib"
-  spec.version      = "1.0.8"
+  spec.name         = "WebRTC-SDK"
+  spec.version      = "1.0.9"
   spec.summary      = "WebRTC с поддержкой H.265"
 
   spec.homepage     = "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test"
@@ -14,6 +14,7 @@ Pod::Spec.new do |spec|
 
   spec.ios.deployment_target = '13.0'
   spec.vendored_frameworks = "WebRTC.xcframework"
+  spec.module_name = "WebRTC"
   
   spec.frameworks = [
     'AVFoundation',
