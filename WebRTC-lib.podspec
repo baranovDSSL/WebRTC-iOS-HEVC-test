@@ -8,7 +8,7 @@ Pod::Spec.new do |spec|
   
   spec.source       = { 
     :http => "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test/releases/download/v#{spec.version}/WebRTC.xcframework.zip",
-    :sha256 => "51060ed174e2f45c264e094eb559b2bd54663bd782676e484e6a93f28fa427ba"
+    :sha256 => "eb7807ee8e1c6f184827a94ac02f0c2d22896ad9dd03e352e4570c51f46ec081"
   }
 
   spec.ios.deployment_target = '13.0'
