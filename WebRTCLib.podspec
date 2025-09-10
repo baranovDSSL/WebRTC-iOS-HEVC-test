@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
-  spec.name         = "WebRTC-lib"
-  spec.version      = "1.0.0"
+  spec.name         = "WebRTCLib"
+  spec.version      = "1.0.7"
   spec.summary      = "WebRTC с поддержкой H.265"
 
   spec.homepage     = "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test"
@@ -8,8 +8,8 @@ Pod::Spec.new do |spec|
   spec.author       = "DSSL"
   
   spec.source       = { 
-    :http => "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test/releases/download/v#{spec.version}/WebRTC.xcframework.zip",
-    :sha256 => "eb7807ee8e1c6f184827a94ac02f0c2d22896ad9dd03e352e4570c51f46ec081"
+    :git => "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test.git",
+    :tag => "v#{spec.version}"
   }
 
   spec.ios.deployment_target = '13.0'
@@ -37,4 +37,4 @@ Pod::Spec.new do |spec|
   spec.user_target_xcconfig = {
     'ENABLE_BITCODE' => 'NO'
   }
-end
+end надо для коммита ? тег?
