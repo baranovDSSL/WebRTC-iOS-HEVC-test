@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "WebRTCLib"
-  spec.version      = "1.0.7"
+  spec.version      = "1.0.8"
   spec.summary      = "WebRTC с поддержкой H.265"
 
   spec.homepage     = "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test"
@@ -37,4 +37,4 @@ Pod::Spec.new do |spec|
   spec.user_target_xcconfig = {
     'ENABLE_BITCODE' => 'NO'
   }
-end надо для коммита ? тег?
+end
