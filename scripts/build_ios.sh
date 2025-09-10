@@ -24,7 +24,6 @@ cd "$WEBRTC_SRC"
 generate_ios_gn_args() {
     local target_cpu=$1
     local is_simulator=$2
-    
     local args="target_os=\"ios\""
     args="$args target_cpu=\"$target_cpu\""
     args="$args is_debug=false"
@@ -37,7 +36,6 @@ generate_ios_gn_args() {
     args="$args treat_warnings_as_errors=false"
     args="$args use_custom_libcxx=false"
     args="$args use_rtti=true"
-    
     args="$args ios_deployment_target=\"13.0\""
     args="$args enable_ios_bitcode=false"
     args="$args ios_enable_code_signing=false"
@@ -140,17 +138,17 @@ build_ios_webrtc() {
     ninja -C "$out_dir"
     
     if [ $? -eq 0 ]; then
-        echo "[iOS Build] ✅ Build completed successfully for iOS ($arch)${is_simulator:+ (Simulator)}"
+        echo "[iOS Build] Build completed successfully for iOS ($arch)${is_simulator:+ (Simulator)}"
     else
-        echo "[iOS Build] ❌ Build failed for iOS ($arch)${is_simulator:+ (Simulator)}"
+        echo "[iOS Build] Build failed for iOS ($arch)${is_simulator:+ (Simulator)}"
         exit 1
     fi
 }
 
-echo "[iOS Build] 🚀 Starting iOS WebRTC builds..."
-echo "[iOS Build] 📱 Target: iOS 13.0+ (ARM64)"
-echo "[iOS Build] 🎥 H.265/HEVC: Enabled with VideoToolbox hardware acceleration"
-echo "[iOS Build] 🔧 Optimizations: Size optimization, LTO, symbol stripping enabled"
+echo "[iOS Build] Starting iOS WebRTC builds..."
+echo "[iOS Build] Target: iOS 13.0+ (ARM64)"
+echo "[iOS Build] H.265/HEVC: Enabled with VideoToolbox hardware acceleration"
+echo "[iOS Build] Optimizations: Size optimization, LTO, symbol stripping enabled"
 
 if [ "$BUILD_IOS" = "true" ]; then
     build_ios_webrtc "arm64" "false" "ios_arm64"
@@ -160,5 +158,4 @@ if [ "$BUILD_IOS_SIM" = "true" ]; then
     build_ios_webrtc "arm64" "true" "ios_sim_arm64"
 fi
 
-echo "[iOS Build] 🎉 All iOS builds completed successfully!"
-echo "[iOS Build] 📦 Ready for framework packaging..."
+echo "[iOS Build] All iOS builds completed successfully!"

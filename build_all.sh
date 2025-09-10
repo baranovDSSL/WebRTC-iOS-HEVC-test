@@ -76,7 +76,7 @@ main() {
     "$PROJECT_ROOT/scripts/fetch_webrtc.sh"
     
     print_status "Step 3/5: Applying H.265 patches..."
-    "$PROJECT_ROOT/scripts/apply_h265_patches.sh"
+    "$PROJECT_ROOT/scripts/apply_patches.sh"
     
     print_status "Step 4/5: Building WebRTC for iOS..."
     print_warning "This will take 30-60 minutes"
@@ -85,12 +85,12 @@ main() {
     print_status "Step 5/5: Packaging framework..."
     "$PROJECT_ROOT/scripts/package_framework.sh"
     
-    print_status "Build completed successfully! 🎉"
+    print_status "Build completed successfully!"
     print_status "Output files:"
     echo "  - XCFramework: $PROJECT_ROOT/output/WebRTC.xcframework"
-    echo "  - Compressed: $PROJECT_ROOT/output/WebRTC-H265.zip"
+    echo "  - Compressed: $PROJECT_ROOT/output/WebRTC.xcframework.zip"
     print_status "Framework details:"
-    echo "  - Size: $(ls -lh "$PROJECT_ROOT/output/WebRTC-H265.zip" | awk '{print $5}')"
+    echo "  - Size: $(ls -lh "$PROJECT_ROOT/output/WebRTC.xcframework.zip" | awk '{print $5}')"
     echo "  - Architecture: arm64 (iOS device and simulator)"
     echo "  - H265 Support: Enabled"
 }

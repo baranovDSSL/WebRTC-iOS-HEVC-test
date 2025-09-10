@@ -16,14 +16,14 @@ BUILD_IOS="${BUILD_IOS:-true}"
 BUILD_IOS_SIM="${BUILD_IOS_SIM:-true}"
 ARCHIVE_BUILDS="${ARCHIVE_BUILDS:-true}"
 
-echo "[Package] 🔍 Checking for iOS build outputs..."
+echo "[Package] Checking for iOS build outputs..."
 
 if [ ! -d "$WEBRTC_SRC/out/ios_arm64" ] && [ ! -d "$WEBRTC_SRC/out/ios_sim_arm64" ]; then
-    echo "[Package] ❌ Error: No iOS builds found. Please run build_ios.sh first"
+    echo "[Package] Error: No iOS builds found. Please run build_ios.sh first"
     exit 1
 fi
 
-echo "[Package] ✅ iOS build outputs found"
+echo "[Package] iOS build outputs found"
 
 cd "$WEBRTC_SRC"
 
@@ -43,7 +43,7 @@ if [ "$BUILD_IOS" = "true" ] && [ -d "$WEBRTC_SRC/out/ios_arm64/WebRTC.framework
     if [ -f "$WEBRTC_SRC/out/ios_arm64/gen/sdk/WebRTC.framework/WebRTC/WebRTC.h" ]; then
         cp "$WEBRTC_SRC/out/ios_arm64/gen/sdk/WebRTC.framework/WebRTC/WebRTC.h" "$DEVICE_TEMP_DIR/WebRTC.framework/Headers/"
     else
-        echo "⚠️ Warning: WebRTC.h not found for device framework"
+        echo "Warning: WebRTC.h not found for device framework"
     fi
 fi
 
@@ -55,7 +55,7 @@ if [ "$BUILD_IOS_SIM" = "true" ] && [ -d "$WEBRTC_SRC/out/ios_sim_arm64/WebRTC.f
     if [ -f "$WEBRTC_SRC/out/ios_sim_arm64/gen/sdk/WebRTC.framework/WebRTC/WebRTC.h" ]; then
         cp "$WEBRTC_SRC/out/ios_sim_arm64/gen/sdk/WebRTC.framework/WebRTC/WebRTC.h" "$SIMULATOR_TEMP_DIR/WebRTC.framework/Headers/"
     else
-        echo "⚠️ Warning: WebRTC.h not found for simulator framework"
+        echo "Warning: WebRTC.h not found for simulator framework"
     fi
 fi
 
@@ -73,7 +73,7 @@ if [ "$BUILD_IOS_SIM" = "true" ] && [ -d "$SIMULATOR_TEMP_DIR/WebRTC.framework" 
 fi
 
 if [ ${#FRAMEWORKS_BUILT[@]} -eq 0 ]; then
-    echo "[Package] ❌ Error: No frameworks found to create XCFramework"
+    echo "[Package] Error: No frameworks found to create XCFramework"
     exit 1
 fi
 
@@ -96,16 +96,16 @@ if [ "${ARCHIVE_BUILDS:-true}" = "true" ]; then
         cp "$PROJECT_ROOT/LICENSE" "$OUTPUT_DIR/"
         echo "Including LICENSE file in archive..."
     else
-        echo "⚠️ Warning: LICENSE file not found at $PROJECT_ROOT/LICENSE"
+        echo "Warning: LICENSE file not found at $PROJECT_ROOT/LICENSE"
     fi
     
-    zip -r "WebRTC-H265.zip" "WebRTC.xcframework" LICENSE
-    echo "Output: $OUTPUT_DIR/WebRTC-H265.zip"
+    zip -r "WebRTC.xcframework.zip" "WebRTC.xcframework" LICENSE
+    echo "Output: $OUTPUT_DIR/WebRTC.xcframework.zip"
 else
     echo "XCFramework: $OUTPUT_DIR/WebRTC.xcframework"
 fi
 
-echo "🔧 Post-processing: Setting up RTCMacros.h structure..."
+echo "Post-processing: Setting up RTCMacros.h structure..."
 
 if [ -d "$OUTPUT_DIR/WebRTC.xcframework" ]; then
     find "$OUTPUT_DIR/WebRTC.xcframework" -name "WebRTC.framework" -type d | while read framework_path; do
@@ -118,8 +118,8 @@ fi
 
 rm -rf "$DEVICE_TEMP_DIR" "$SIMULATOR_TEMP_DIR"
 
-echo "🎉 iOS XCFramework with H.265 support successfully created!"
-echo "📦 Framework includes:"
+echo "iOS XCFramework with H.265 support successfully created!"
+echo "Framework includes:"
 if [ "$BUILD_IOS" = "true" ] && [ -d "$OUTPUT_DIR/WebRTC.xcframework/ios-arm64/WebRTC.framework" ]; then
     echo "   - iOS Device (arm64)"
 fi
@@ -127,4 +127,3 @@ if [ "$BUILD_IOS_SIM" = "true" ] && [ -d "$OUTPUT_DIR/WebRTC.xcframework/ios-arm
     echo "   - iOS Simulator (arm64)"
 fi
 echo "   - H.265/HEVC hardware acceleration via VideoToolbox"
-echo "   - Minimum iOS version: 13.0"

@@ -3,49 +3,24 @@ Pod::Spec.new do |spec|
   spec.version      = '1.0.0'
   spec.summary      = 'WebRTC с поддержкой H.265'
 
-  spec.description  = <<-DESC
-    Custom WebRTC с поддержкой H.265 built from WebRTC M139.
-    This version includes H.265 encoder and decoder with VideoToolbox integration for optimal
-    performance on iOS devices.
-    
-    Key features:
-    - H.265/HEVC hardware-accelerated encoding and decoding via VideoToolbox
-    - H.264 support (standard WebRTC)
-    - VP8/VP9 codec support
-    - iOS 13.0+ compatibility
-    - arm64 device and simulator support
-    - Size optimized build (~250MB)
-    
-    Built from WebRTC commit: 23d8e44f84822170bee4425760b44237959423e5 (M139)
-    Includes 19 H.265 patches for full HEVC integration.
-  DESC
-
   spec.homepage     = 'https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test'
-  spec.license      = { :type => 'MIT', :file => 'LICENSE' }
-  spec.author       = { 'baranovDSSL' => 'baranov@dssl.com' }
+  spec.license      = { :type => 'BSD', :file => 'LICENSE' }
   
   # For CocoaPods distribution - will point to GitHub release
   spec.source       = { 
-    :http => "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test/releases/download/v#{spec.version}/WebRTC-H265.zip",
+    :http => "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test/releases/download/v#{spec.version}/WebRTC.xcframework.zip",
     :sha256 => "51060ed174e2f45c264e094eb559b2bd54663bd782676e484e6a93f28fa427ba"
   }
 
   spec.ios.deployment_target = '13.0'
-  spec.requires_arc = true
 
   spec.vendored_frameworks = 'WebRTC.xcframework'
   
   spec.frameworks = [
     'AVFoundation',
-    'AudioToolbox', 
-    'CoreAudio',
     'CoreMedia',
     'CoreVideo',
     'Foundation',
-    'Metal',
-    'MetalKit',
-    'QuartzCore',
-    'UIKit',
     'VideoToolbox'
   ]
   

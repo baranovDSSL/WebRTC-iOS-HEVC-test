@@ -9,13 +9,13 @@ pod 'WebRTC-lib'
 
 ### Local Build
 ```bash
-git clone https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test
-cd WebRTC-iOS-HEVC-test
+git clone https://github.com/TRASSIR-ALMATY/WebRTC-iOS-HEVC
+cd WebRTC-iOS-HEVC
 ./build_all.sh
 ```
 
-## H.265 Modifications
-- RTCVideoEncoderH265 implementation
+## Modifications
+- H.265/HEVC codec support for iOS
 - VideoToolbox hardware acceleration
 - 19 patches for WebRTC integration
 - Based on WebRTC M139
