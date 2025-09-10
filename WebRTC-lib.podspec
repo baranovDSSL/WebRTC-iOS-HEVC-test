@@ -1,9 +1,9 @@
 Pod::Spec.new do |spec|
-  spec.name         = 'WebRTC-lib'
-  spec.version      = '1.0.0'
-  spec.summary      = 'WebRTC с поддержкой H.265'
+  spec.name         = "WebRTC-lib"
+  spec.version      = "1.0.0"
+  spec.summary      = "WebRTC с поддержкой H.265"
 
-  spec.homepage     = 'https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test'
+  spec.homepage     = "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test"
   spec.license      = { :type => 'BSD', :file => 'LICENSE' }
   spec.author       = "DSSL"
   
@@ -13,7 +13,7 @@ Pod::Spec.new do |spec|
   }
 
   spec.ios.deployment_target = '13.0'
-  spec.vendored_frameworks = 'WebRTC.xcframework'
+  spec.vendored_frameworks = "WebRTC.xcframework"
   
   spec.frameworks = [
     'AVFoundation',
