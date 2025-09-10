@@ -1,0 +1,11 @@
+--- src/sdk/objc/unittests/RTCDoNotPutCPlusPlusInFrameworkHeaders_xctest.m.orig	2025-09-10 00:00:00
++++ src/sdk/objc/unittests/RTCDoNotPutCPlusPlusInFrameworkHeaders_xctest.m	2025-09-10 00:00:00
+@@ -12,7 +12,7 @@
+ // This file should be compilable as Objective-C (not Objective-C++).
+ // If this stops compiling it means someone has included C++ in framework headers.
+ 
+-#import <WebRTC/WebRTC.h>
++#import <WebRTCLib/WebRTCLib.h>
+ 
+ @interface RTCDoNotPutCPlusPlusInFrameworkHeaders_xctest : NSObject
+ @end

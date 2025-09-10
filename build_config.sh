@@ -35,6 +35,10 @@ export ARCHIVE_BUILDS="${ARCHIVE_BUILDS:-true}"        # Create zip archives of 
 # Logging Configuration
 export VERBOSE_BUILD="${VERBOSE_BUILD:-false}"         # Enable verbose build output
 
+# Framework Naming Configuration
+export FRAMEWORK_NAME="${FRAMEWORK_NAME:-WebRTCLib}"   # Framework name (WebRTCLib.framework)
+export MODULE_NAME="${MODULE_NAME:-WebRTCLib}"         # Module name (for import statements)
+
 # Print configuration summary
 print_config() {
     echo "=== WebRTC Build Configuration ==="

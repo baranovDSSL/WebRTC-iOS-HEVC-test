@@ -1,0 +1,38 @@
+--- src/sdk/BUILD.gn.orig	2025-09-10 00:00:00
++++ src/sdk/BUILD.gn	2025-09-10 00:00:00
+@@ -1299,7 +1299,7 @@
+     if (is_ios) {
+       apple_framework_bundle_with_umbrella_header("framework_objc") {
+         info_plist = "objc/Info.plist"
+-        output_name = "WebRTC"
++        output_name = "WebRTCLib"
+ 
+         common_objc_headers = [
+           "objc/base/RTCCodecSpecificInfo.h",
+@@ -1453,7 +1453,7 @@
+ 
+       bundle_data("ios_framework_bundle") {
+         deps = [ "../sdk:framework_objc" ]
+-        sources = [ "$root_build_dir/WebRTC.framework" ]
++        sources = [ "$root_build_dir/WebRTCLib.framework" ]
+         outputs = [ "{{bundle_resources_dir}}/Frameworks/{{source_file_part}}" ]
+       }
+     }
+@@ -1461,7 +1467,7 @@
+     if (is_mac) {
+       apple_framework_bundle_with_umbrella_header("mac_framework_objc") {
+         info_plist = "objc/Info.plist"
+-        output_name = "WebRTC"
++        output_name = "WebRTCLib"
+ 
+         sources = [
+           "objc/api/peerconnection/RTCAudioSource.h",
+@@ -1586,7 +1592,7 @@
+ 
+       bundle_data("mac_framework_bundle") {
+         deps = [ "../sdk:mac_framework_objc" ]
+-        sources = [ "$root_build_dir/WebRTC.framework" ]
++        sources = [ "$root_build_dir/WebRTCLib.framework" ]
+         outputs = [ "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}" ]
+       }
+     }

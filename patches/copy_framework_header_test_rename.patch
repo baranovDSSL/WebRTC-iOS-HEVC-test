@@ -1,0 +1,14 @@
+--- src/tools_webrtc/apple/copy_framework_header_test.py.orig	2025-09-10 00:00:00
++++ src/tools_webrtc/apple/copy_framework_header_test.py	2025-09-10 00:00:00
+@@ -18,1 +18,1 @@
+-                     """#import <WebRTC/RTCMacros.h>""")
++                     """#import <WebRTCLib/RTCMacros.h>""")
+@@ -20,1 +20,1 @@
+-                     """#import <WebRTC/RTCMacros.h>\n""")
++                     """#import <WebRTCLib/RTCMacros.h>\n""")
+@@ -23,1 +23,1 @@
+-        """#import <WebRTC/UIDevice+RTCDevice.h>\n""")
++        """#import <WebRTCLib/UIDevice+RTCDevice.h>\n""")
+@@ -27,1 +27,1 @@
+-        """#import <WebRTC/RTCVideoDecoderFactoryH264.h>\n""")
++        """#import <WebRTCLib/RTCVideoDecoderFactoryH264.h>\n""")

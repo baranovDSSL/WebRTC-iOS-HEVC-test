@@ -1,0 +1,11 @@
+--- src/webrtc.gni.orig	2025-09-10 00:00:00
++++ src/webrtc.gni	2025-09-10 00:00:00
+@@ -1069,1 +1069,1 @@
+-        "$target_gen_dir/$output_name.framework/WebRTC/$output_name.h"
++        "$target_gen_dir/$output_name.framework/$output_name/$output_name.h"
+@@ -1078,1 +1078,1 @@
+-        "$target_gen_dir/$output_name.framework/WebRTC/{{source_file_part}}",
++        "$target_gen_dir/$output_name.framework/$output_name/{{source_file_part}}",
+@@ -1085,1 +1085,1 @@
+-            "/$output_name.framework/WebRTC/{{source_file_part}}",
++            "/$output_name.framework/$output_name/{{source_file_part}}",

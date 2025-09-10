@@ -1,0 +1,33 @@
+--- src/tools_webrtc/ios/build_ios_libs.py.orig	2025-09-10 00:00:00
++++ src/tools_webrtc/ios/build_ios_libs.py	2025-09-10 00:00:00
+@@ -27,9 +27,9 @@
+ import find_depot_tools
+ 
+ SDK_OUTPUT_DIR = os.path.join(SRC_DIR, 'out_ios_libs')
+-SDK_FRAMEWORK_NAME = 'WebRTC.framework'
+-SDK_DSYM_NAME = 'WebRTC.dSYM'
+-SDK_XCFRAMEWORK_NAME = 'WebRTC.xcframework'
++SDK_FRAMEWORK_NAME = 'WebRTCLib.framework'
++SDK_DSYM_NAME = 'WebRTCLib.dSYM'
++SDK_XCFRAMEWORK_NAME = 'WebRTCLib.xcframework'
+ 
+ ENABLED_ARCHS = [
+     'device:arm64', 'simulator:arm64', 'simulator:x64',
+@@ -265,7 +265,7 @@
+         all_lib_paths.extend(lib_paths)
+ 
+         # Combine the slices.
+-        dylib_path = os.path.join(SDK_FRAMEWORK_NAME, 'WebRTC')
++        dylib_path = os.path.join(SDK_FRAMEWORK_NAME, 'WebRTCLib')
+         # Dylibs will be combined, all other files are the same across archs.
+         shutil.rmtree(os.path.join(framework_path, SDK_FRAMEWORK_NAME),
+                       ignore_errors=True)
+@@ -294,7 +294,7 @@
+         if dsym_paths:
+             logging.info('Merging dSYM slices.')
+             dsym_path = os.path.join(SDK_DSYM_NAME, 'Contents', 'Resources',
+-                                     'DWARF', 'WebRTC')
++                                     'DWARF', 'WebRTCLib')
+             lib_dsym_paths = [
+                 os.path.join(path, dsym_path) for path in lib_paths
+             ]

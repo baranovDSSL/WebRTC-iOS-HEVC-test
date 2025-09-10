@@ -28,6 +28,14 @@ cd "$SRC_DIR"
 
 # List of patches in correct application order
 PATCHES=(
+    "framework_rename.patch"
+    "info_plist_rename.patch"
+    "build_ios_libs_rename.patch"
+    "umbrella_header_rename.patch"
+    "webrtc_gni_rename.patch"
+    "test_import_rename.patch"
+    "copy_framework_header_rename.patch"
+    "copy_framework_header_test_rename.patch"
     "BUILD_gn.patch"
     "nalu_rewriter_h.patch"
     "nalu_rewriter_h265.patch"
@@ -52,7 +60,7 @@ PATCHES=(
 APPLIED_COUNT=0
 FAILED_COUNT=0
 
-echo "Found 19 patch files"
+echo "Found 26 patch files"
 
 for patch in "${PATCHES[@]}"; do
     patch_file="$PATCHES_DIR/$patch"

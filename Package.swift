@@ -8,15 +8,15 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "WebRTC",
-            targets: ["WebRTC"]
+            name: "WebRTCLib",
+            targets: ["WebRTCLib"]
         ),
     ],
     targets: [
         .binaryTarget(
-            name: "WebRTC",
-            url: "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test/releases/download/v1.0.5/WebRTC.xcframework.zip",
-            checksum: "eb7807ee8e1c6f184827a94ac02f0c2d22896ad9dd03e352e4570c51f46ec081"
+            name: "WebRTCLib",
+                    url: "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test/releases/download/v1.0.6/WebRTCLib.xcframework.zip",
+            checksum: "fc98568b6cbca422ff9b25416e0c48e932b45034579897dc813488ffbb944ab4"
         )
     ]
 )
