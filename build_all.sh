@@ -95,5 +95,4 @@ main() {
     echo "  - H265 Support: Enabled"
 }
 
-# Run main function
 main "$@"

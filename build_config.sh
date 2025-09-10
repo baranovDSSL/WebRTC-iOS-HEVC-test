@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# WebRTC Build Configuration (M139)
-# This file contains configurable options for building WebRTC with H.265 support
-
 # Platform Configuration
 export BUILD_IOS="${BUILD_IOS:-true}"                  # Build for iOS devices
 export BUILD_IOS_SIM="${BUILD_IOS_SIM:-true}"         # Build for iOS Simulator
