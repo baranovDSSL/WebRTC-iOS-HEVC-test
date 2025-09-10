@@ -6,7 +6,6 @@ Pod::Spec.new do |spec|
   spec.homepage     = 'https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test'
   spec.license      = { :type => 'BSD', :file => 'LICENSE' }
   
-  # For CocoaPods distribution - will point to GitHub release
   spec.source       = { 
     :http => "https://github.com/baranovDSSL/WebRTC-iOS-HEVC-test/releases/download/v#{spec.version}/WebRTC.xcframework.zip",
     :sha256 => "51060ed174e2f45c264e094eb559b2bd54663bd782676e484e6a93f28fa427ba"
